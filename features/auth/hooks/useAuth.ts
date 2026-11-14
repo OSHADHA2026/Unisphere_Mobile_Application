@@ -1,0 +1,69 @@
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'expo-router';
+import apiClient from '@/services/api';
+import { AppStorage } from '@/services/storage';
+import { STORAGE_KEYS } from '@/constants/config';
+import { queryKeys } from '@/lib/queryKeys';
+
+export const useAuth = () => {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const login = async (email: string, password: string) => {
+    if (!email.includes('@')) {
+      setErrorMessage("Enter a valid email address.");
+      return false;
+    }
+    if (password.length < 6) {
+      setErrorMessage("Password must be at least 6 characters.");
+      return false;
+    }
+
+    setIsLoading(true);
+    setErrorMessage(null);
+
+    try {
+      const response = await apiClient.post('/users/login', { email, password });
+      if (response.data.token) {
+        await AppStorage.setItem(STORAGE_KEYS.userToken, response.data.token);
+        // The cached "no user" result must not survive a successful login.
+        await queryClient.invalidateQueries({ queryKey: queryKeys.currentUser });
+        router.replace('/');
+        return true;
+      }
+    } catch (error: any) {
+      setErrorMessage(error.response?.data?.message || "Server unreachable. Check your connection.");
+    } finally {
+      setIsLoading(false);
+    }
+    return false;
+  };
+
+  const signup = async (formData: any) => {
+    if (!formData.email.includes('@') || formData.password.length < 6 || formData.password !== formData.confirmPassword) {
+      setErrorMessage("Invalid registration details. Please check your inputs.");
+      return false;
+    }
+
+    setIsLoading(true);
+    setErrorMessage(null);
+
+    try {
+      const response = await apiClient.post('/users/signup', formData);
+      if (response.status === 201) {
+        router.replace('/login');
+        return true;
+      }
+    } catch (error: any) {
+      setErrorMessage(error.response?.data?.message || "Registration failed. Check your network.");
+    } finally {
+      setIsLoading(false);
+    }
+    return false;
+  };
+
+  return { login, signup, isLoading, errorMessage, setErrorMessage };
+};
