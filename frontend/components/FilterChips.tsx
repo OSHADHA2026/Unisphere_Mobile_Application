@@ -14,13 +14,15 @@ type FilterChipsProps<T extends string> = {
   options: readonly T[];
   selectedValue: T;
   onSelect: (value: T) => void;
+  /** Horizontal padding inside the scroller, so chips can scroll edge to edge. */
+  edgePadding?: number;
 };
 
-const FilterChips = <T extends string>({ options, selectedValue, onSelect }: FilterChipsProps<T>) => {
+const FilterChips = <T extends string>({ options, selectedValue, onSelect, edgePadding = 0 }: FilterChipsProps<T>) => {
   const { colors } = useTheme();
 
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 2 }}>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 2, paddingHorizontal: edgePadding }}>
       {options.map((option) => {
         const isActive = selectedValue === option;
 
@@ -31,7 +33,8 @@ const FilterChips = <T extends string>({ options, selectedValue, onSelect }: Fil
             accessibilityState={{ selected: isActive }}
             onPress={() => onSelect(option)}
             style={{
-              height: 36,
+              minHeight: 36,
+              paddingVertical: 6,
               paddingHorizontal: 16,
               borderRadius: 18,
               borderWidth: 1,

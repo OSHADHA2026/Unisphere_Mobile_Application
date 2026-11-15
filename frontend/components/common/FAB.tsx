@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable } from 'react-native';
+import { TouchableOpacity } from 'react-native';
 import { Plus, type LucideIcon } from 'lucide-react-native';
 
 import { useTheme } from '@/context/ThemeContext';
@@ -20,27 +20,25 @@ export default function FAB({ onPress, label, icon: IconComponent = Plus }: FABP
   const { colors, isDark } = useTheme();
 
   return (
-    <Pressable
+    <TouchableOpacity
       accessibilityRole="button"
       accessibilityLabel={label}
+      activeOpacity={0.88}
       onPress={onPress}
-      style={({ pressed }) => [
-        {
-          position: 'absolute',
-          right: layout.screenPadding,
-          bottom: layout.screenPadding,
-          width: layout.fabSize,
-          height: layout.fabSize,
-          borderRadius: layout.fabSize / 2,
-          backgroundColor: colors.primary,
-          alignItems: 'center',
-          justifyContent: 'center',
-          opacity: pressed ? 0.88 : 1,
-          ...elevation(3, isDark),
-        },
-      ]}
+      style={{
+        position: 'absolute',
+        right: layout.screenPadding,
+        bottom: layout.screenPadding,
+        width: layout.fabSize,
+        height: layout.fabSize,
+        borderRadius: layout.fabSize / 2,
+        backgroundColor: colors.primary,
+        alignItems: 'center',
+        justifyContent: 'center',
+        ...elevation(3, isDark),
+      }}
     >
       <IconComponent size={26} color={colors.onPrimary} />
-    </Pressable>
+    </TouchableOpacity>
   );
 }

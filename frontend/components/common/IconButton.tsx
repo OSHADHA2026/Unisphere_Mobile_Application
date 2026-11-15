@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, type StyleProp, type ViewStyle } from 'react-native';
+import { TouchableOpacity, type StyleProp, type ViewStyle } from 'react-native';
 import type { LucideIcon } from 'lucide-react-native';
 
 import { useTheme } from '@/context/ThemeContext';
@@ -28,12 +28,13 @@ export default function IconButton({
   const { colors } = useTheme();
 
   return (
-    <Pressable
+    <TouchableOpacity
       accessibilityRole="button"
       accessibilityLabel={label}
+      activeOpacity={0.7}
       onPress={onPress}
       hitSlop={6}
-      style={({ pressed }) => [
+      style={[
         {
           width: layout.minTouch,
           height: layout.minTouch,
@@ -41,12 +42,11 @@ export default function IconButton({
           alignItems: 'center',
           justifyContent: 'center',
           backgroundColor: filled ? colors.bgInput : 'transparent',
-          opacity: pressed ? 0.7 : 1,
         },
         style,
       ]}
     >
       <IconComponent size={size} color={color ?? colors.text} />
-    </Pressable>
+    </TouchableOpacity>
   );
 }

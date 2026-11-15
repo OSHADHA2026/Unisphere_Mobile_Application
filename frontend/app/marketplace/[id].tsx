@@ -17,15 +17,25 @@ import ScreenHeader from '@/components/common/ScreenHeader';
 import Section from '@/components/common/Section';
 import { layout } from '@/constants/theme';
 import { useUser } from '@/hooks/useUser';
+import { useQueryClient } from '@tanstack/react-query';
+
+import { getCachedListItem } from '@/lib/cache';
+import { queryKeys } from '@/lib/queryKeys';
 import apiClient from '@/services/api';
+import { refreshList } from '@/lib/queryClient';
 
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const { userId } = useUser();
 
-  const [product, setProduct] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  // Open instantly with the item the list already downloaded.
+  const [seed] = useState(() =>
+    getCachedListItem(queryClient, queryKeys.marketplace, (p) => p._id === id),
+  );
+  const [product, setProduct] = useState<any>(seed ?? null);
+  const [loading, setLoading] = useState(!seed);
 
   const fetchProduct = useCallback(async () => {
     try {
@@ -73,7 +83,8 @@ export default function ProductDetailScreen() {
         onPress: async () => {
           try {
             await apiClient.delete(`/api/marketplace/${id}`);
-            router.replace('/marketplace');
+            refreshList('marketplace');
+            router.dismissTo('/marketplace');
           } catch {
             Alert.alert('Error', 'Failed to delete item.');
           }

@@ -54,3 +54,9 @@ utils/          Pure helpers (timeAgo, imageUrl, updateChecker).
 - Browse pages use `FeedScreen`; create/edit pages use `FormScreen` + `TextField` / `OptionChips` / `PhotoPicker`.
 - Use `AppText` (variants/tones), `Button`, `Card`, `Badge` and the tokens in `constants/theme.ts` and `constants/colors.ts` instead of ad-hoc styles or hard-coded colors, so light/dark mode and spacing stay consistent.
 - Use `RemoteImage` for backend images: it shows a placeholder if the image is missing or fails to load.
+
+## App size & memory
+
+- **APK size:** `app.json` uses `expo-build-properties` with `buildArchs: ["armeabi-v7a", "arm64-v8a"]`, so the APK no longer ships the emulator-only x86 / x86_64 native libraries. For the smallest sideload APK on modern phones use only `["arm64-v8a"]`. For the Play Store build an Android App Bundle (`eas build -p android --profile production`), which delivers only the user's CPU variant.
+- **Images:** use `RemoteImage` (backed by `expo-image`) for all remote pictures. It decodes at display size and caches, which keeps memory low in long lists. Image pickers use reduced quality (0.5–0.6) for smaller uploads.
+- **Known remaining cost:** event images are stored as base64 text in the database and sent inside the events list. Moving them to Supabase Storage URLs (backend change) would cut both memory use and data usage noticeably.

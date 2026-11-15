@@ -1,5 +1,5 @@
 import React from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { KeyboardAvoidingView, ScrollView } from 'react-native';
 
 import { layout } from '@/constants/theme';
 
@@ -38,7 +38,7 @@ export default function FormScreen({
 }: FormScreenProps) {
   return (
     <Screen header={<ScreenHeader title={title} subtitle={subtitle} onBack={onBack} right={headerRight} />}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         <ScrollView
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}

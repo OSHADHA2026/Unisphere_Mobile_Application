@@ -1,9 +1,10 @@
 import React from 'react';
-import { Image, View } from 'react-native';
+import { View } from 'react-native';
 import { MapPin } from 'lucide-react-native';
 
 import AppText from '@/components/common/AppText';
 import Card from '@/components/common/Card';
+import RemoteImage from '@/components/common/RemoteImage';
 import { useTheme } from '@/context/ThemeContext';
 import type { Event } from '@/features/events/hooks/useEvents';
 
@@ -20,10 +21,9 @@ export default function FeaturedEventCard({ event, onPress }: FeaturedEventCardP
   return (
     <Card padded={false} onPress={onPress} style={{ width: 272 }}>
       <View>
-        <Image
-          source={{ uri: event.image || FALLBACK_EVENT_IMAGE }}
-          style={{ width: '100%', height: 140, backgroundColor: colors.bgInput }}
-          resizeMode="cover"
+        <RemoteImage
+          uri={event.image || FALLBACK_EVENT_IMAGE}
+          style={{ width: '100%', height: 140 }}
         />
         <View
           style={{

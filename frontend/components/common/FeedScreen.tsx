@@ -67,43 +67,50 @@ export default function FeedScreen<T, F extends string = string>({
     }
   };
 
-  let body: React.ReactNode;
+  const isInitialLoading = loading && !refreshing;
+  const listData = error && !isInitialLoading ? [] : data;
+  const listEmptyComponent = isInitialLoading ? (
+    <LoadingState />
+  ) : error ? (
+    <EmptyState icon={AlertCircle} title="Something went wrong" message={error} />
+  ) : (
+    <EmptyState icon={empty.icon} title={empty.title} message={empty.message} />
+  );
 
-  if (loading && !refreshing) {
-    body = <LoadingState />;
-  } else if (error) {
-    body = <EmptyState icon={AlertCircle} title="Something went wrong" message={error} />;
-  } else {
-    body = (
-      <FlatList
-        key={numColumns}
-        data={data}
-        keyExtractor={keyExtractor}
-        renderItem={renderItem}
-        numColumns={numColumns}
-        columnWrapperStyle={numColumns > 1 ? { gap: 12 } : undefined}
-        ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-        ListHeaderComponent={
-          <View style={{ marginBottom: 16, gap: 4 }}>
-            <AppText variant="display">{title}</AppText>
-            <AppText variant="body" tone="secondary">
-              {subtitle}
-            </AppText>
-          </View>
-        }
-        ListEmptyComponent={<EmptyState icon={empty.icon} title={empty.title} message={empty.message} />}
-        contentContainerStyle={{
-          paddingHorizontal: layout.screenPadding,
-          paddingTop: 8,
-          paddingBottom: onCreate ? layout.fabSize + layout.screenPadding * 2 : 24,
-          flexGrow: 1,
-        }}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        refreshControl={onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} /> : undefined}
-      />
-    );
-  }
+  const body = (
+    <FlatList
+      key={numColumns}
+      style={{ flex: 1 }}
+      data={listData}
+      keyExtractor={keyExtractor}
+      renderItem={renderItem}
+      numColumns={numColumns}
+      columnWrapperStyle={numColumns > 1 ? { gap: 12 } : undefined}
+      ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+      ListHeaderComponent={
+        <View style={{ marginBottom: 16, gap: 4 }}>
+          <AppText variant="display">{title}</AppText>
+          <AppText variant="body" tone="secondary">
+            {subtitle}
+          </AppText>
+        </View>
+      }
+      ListEmptyComponent={listEmptyComponent}
+      contentContainerStyle={{
+        paddingHorizontal: layout.screenPadding,
+        paddingTop: 8,
+        paddingBottom: onCreate ? layout.fabSize + layout.screenPadding * 2 : 24,
+        flexGrow: 1,
+      }}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+      initialNumToRender={6}
+      maxToRenderPerBatch={6}
+      windowSize={7}
+      removeClippedSubviews
+      refreshControl={onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} /> : undefined}
+    />
+  );
 
   return (
     <Screen
@@ -111,10 +118,17 @@ export default function FeedScreen<T, F extends string = string>({
       tabBar
       fab={onCreate ? <FAB onPress={onCreate} label={createLabel} /> : undefined}
     >
-      <View style={{ paddingHorizontal: layout.screenPadding, paddingTop: 12, gap: 12 }}>
+      <View style={{ paddingHorizontal: layout.screenPadding, paddingTop: 12, paddingBottom: 4, gap: 12 }}>
         <SearchInput value={search.value} onChangeText={search.onChange} placeholder={search.placeholder} />
         {filters ? (
-          <FilterChips options={filters.options} selectedValue={filters.selected} onSelect={filters.onSelect} />
+          <View style={{ marginHorizontal: -layout.screenPadding }}>
+            <FilterChips
+              options={filters.options}
+              selectedValue={filters.selected}
+              onSelect={filters.onSelect}
+              edgePadding={layout.screenPadding}
+            />
+          </View>
         ) : null}
       </View>
 

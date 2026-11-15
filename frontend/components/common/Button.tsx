@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActivityIndicator, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
+import { ActivityIndicator, TouchableOpacity, View, type StyleProp, type ViewStyle } from 'react-native';
 import type { LucideIcon } from 'lucide-react-native';
 
 import { useTheme } from '@/context/ThemeContext';
@@ -42,14 +42,17 @@ export default function Button({
   }[variant];
 
   return (
-    <Pressable
+    <TouchableOpacity
       accessibilityRole="button"
       accessibilityLabel={title}
       accessibilityState={{ disabled: !!inactive, busy: !!loading }}
-      onPress={inactive ? undefined : onPress}
-      style={({ pressed }) => [
+      activeOpacity={0.85}
+      disabled={!!inactive}
+      onPress={onPress}
+      style={[
         {
-          height: size === 'lg' ? 54 : 48,
+          minHeight: size === 'lg' ? 54 : 48,
+          paddingVertical: 10,
           borderRadius: radius.md,
           paddingHorizontal: 20,
           backgroundColor: palette.bg,
@@ -59,7 +62,7 @@ export default function Button({
           justifyContent: 'center',
           flexDirection: 'row',
           alignSelf: fullWidth ? 'stretch' : 'flex-start',
-          opacity: inactive ? 0.55 : pressed ? 0.85 : 1,
+          opacity: inactive ? 0.55 : 1,
         },
         style,
       ]}
@@ -74,6 +77,6 @@ export default function Button({
           </AppText>
         </View>
       )}
-    </Pressable>
+    </TouchableOpacity>
   );
 }

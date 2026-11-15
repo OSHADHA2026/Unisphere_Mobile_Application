@@ -1,5 +1,6 @@
 import React from 'react';
-import { Image, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Image } from 'expo-image';
 import { AlertCircle, Camera } from 'lucide-react-native';
 
 import { useTheme } from '@/context/ThemeContext';
@@ -46,7 +47,7 @@ export default function PhotoPicker({ label, uri, onPress, error, height = 200, 
       >
         {uri ? (
           <>
-            <Image source={{ uri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+            <Image source={{ uri }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
             <View
               style={{
                 position: 'absolute',

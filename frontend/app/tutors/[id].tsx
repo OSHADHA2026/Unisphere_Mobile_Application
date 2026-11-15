@@ -18,7 +18,12 @@ import Section from "@/components/common/Section";
 import { layout } from "@/constants/theme";
 import { useTheme } from "@/context/ThemeContext";
 import { useUser } from "@/hooks/useUser";
+import { useQueryClient } from "@tanstack/react-query";
+
+import { getCachedListItem } from "@/lib/cache";
+import { queryKeys } from "@/lib/queryKeys";
 import apiClient from "@/services/api";
+import { refreshList } from "@/lib/queryClient";
 
 export default function TutorProfile() {
   const router = useRouter();
@@ -27,8 +32,11 @@ export default function TutorProfile() {
   const { userId } = useUser();
   const { colors } = useTheme();
 
-  const [tutor, setTutor] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  // Open instantly with the tutor the list already downloaded.
+  const [seed] = useState(() => getCachedListItem(queryClient, queryKeys.tutors, (t) => t._id === id));
+  const [tutor, setTutor] = useState<any>(seed ?? null);
+  const [loading, setLoading] = useState(!seed);
   const [showContact, setShowContact] = useState(false);
 
   useFocusEffect(
@@ -85,7 +93,10 @@ export default function TutorProfile() {
             Alert.alert("Success", "Tutor profile deleted successfully.", [
               {
                 text: "OK",
-                onPress: () => router.replace("/tutors"),
+                onPress: () => {
+                  refreshList("tutors");
+                  router.dismissTo("/tutors");
+                },
               },
             ]);
           } catch (error: any) {

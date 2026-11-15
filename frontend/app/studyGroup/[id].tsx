@@ -18,20 +18,28 @@ import ScreenHeader from "@/components/common/ScreenHeader";
 import Section from "@/components/common/Section";
 import { layout } from "@/constants/theme";
 import { useUser } from "@/hooks/useUser";
+import { useQueryClient } from "@tanstack/react-query";
+
+import { getCachedListItem } from "@/lib/cache";
+import { queryKeys } from "@/lib/queryKeys";
 import apiClient from "@/services/api";
+import { refreshList } from "@/lib/queryClient";
 
 export default function StudyGroupDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
 
   const { userId } = useUser();
-  const [group, setGroup] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  // Open instantly with the group the list already downloaded.
+  const [seed] = useState(() =>
+    getCachedListItem(queryClient, queryKeys.studyGroups, (g) => (g._id || g.id) === id),
+  );
+  const [group, setGroup] = useState<any>(seed ?? null);
+  const [loading, setLoading] = useState(!seed);
 
   const fetchGroup = useCallback(async () => {
     try {
-      setLoading(true);
-
       const response = await apiClient.get(`/studyGroups/${id}`);
 
       const groupData =
@@ -117,7 +125,8 @@ export default function StudyGroupDetailScreen() {
         onPress: async () => {
           try {
             await apiClient.delete(`/studyGroups/${id}`);
-            router.replace("/studyGroup");
+            refreshList("studyGroups");
+            router.dismissTo("/studyGroup");
           } catch (error) {
             console.error("Failed to delete study group:", error);
             Alert.alert("Error", "Failed to delete session.");

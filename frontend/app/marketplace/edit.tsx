@@ -9,6 +9,7 @@ import Screen from "@/components/common/Screen";
 import ScreenHeader from "@/components/common/ScreenHeader";
 import TextField from "@/components/common/TextField";
 import apiClient from "@/services/api";
+import { refreshList } from "@/lib/queryClient";
 
 const CONDITIONS = ["New", "Used", "Like New"] as const;
 
@@ -47,6 +48,7 @@ export default function EditListingScreen() {
     try {
       setSaving(true);
       await apiClient.put(`/api/marketplace/${id}`, { title, price, description, location, contactNumber, condition });
+      refreshList("marketplace");
       router.back();
     } catch (error) { Alert.alert("Error", "Update failed."); } 
     finally { setSaving(false); }

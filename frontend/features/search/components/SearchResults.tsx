@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActivityIndicator, Pressable, View } from 'react-native';
+import { ActivityIndicator, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronRight, SearchX } from 'lucide-react-native';
 
@@ -43,11 +43,12 @@ export default function SearchResults({ results, loading }: SearchResultsProps) 
   return (
     <Card padded={false}>
       {results.map((item, index) => (
-        <Pressable
+        <TouchableOpacity
+          activeOpacity={0.7}
           key={`${item.type}-${item.id}`}
           accessibilityRole="button"
           onPress={() => router.push(item.route as any)}
-          style={({ pressed }) => ({
+          style={{
             flexDirection: 'row',
             alignItems: 'center',
             gap: 12,
@@ -55,8 +56,7 @@ export default function SearchResults({ results, loading }: SearchResultsProps) 
             paddingVertical: 14,
             borderTopWidth: index === 0 ? 0 : 1,
             borderTopColor: colors.border,
-            backgroundColor: pressed ? colors.bgInput : 'transparent',
-          })}
+          }}
         >
           <View style={{ flex: 1, gap: 2 }}>
             <AppText variant="overline" tone="primary">
@@ -72,7 +72,7 @@ export default function SearchResults({ results, loading }: SearchResultsProps) 
             ) : null}
           </View>
           <ChevronRight size={18} color={colors.textMuted} />
-        </Pressable>
+        </TouchableOpacity>
       ))}
     </Card>
   );

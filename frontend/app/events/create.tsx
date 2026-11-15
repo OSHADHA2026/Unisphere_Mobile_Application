@@ -13,6 +13,7 @@ import { useTheme } from "@/context/ThemeContext";
 import DatePickerModal from "@/features/events/components/DatePickerModal";
 import TimePickerModal from "@/features/events/components/TimePickerModal";
 import apiClient from "@/services/api";
+import { refreshList } from "@/lib/queryClient";
 
 /** Small tappable icon placed inside a TextField (calendar / clock). */
 const FieldIcon = ({ icon: IconComponent, onPress, label }: { icon: any; onPress: () => void; label: string }) => {
@@ -97,7 +98,7 @@ export default function CreateEvent() {
         mediaTypes: ["images"],
         allowsEditing: true,
         aspect: [16, 9],
-        quality: 0.7,
+        quality: 0.5,
         base64: true,
       });
       if (!result.canceled && result.assets[0].base64)
@@ -399,7 +400,10 @@ export default function CreateEvent() {
         title="Excellent!"
         message={successMessage}
         actionLabel="Continue to events"
-        onClose={() => router.replace("/events")}
+        onClose={() => {
+          refreshList("events");
+          router.dismissTo("/events");
+        }}
       />
     </FormScreen>
   );

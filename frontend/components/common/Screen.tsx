@@ -1,6 +1,6 @@
 import React from 'react';
 import { View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Footer from '@/components/Footer';
 import { useTheme } from '@/context/ThemeContext';
@@ -25,11 +25,16 @@ type ScreenProps = {
  */
 export default function Screen({ children, header, tabBar = false, fab, bottomBar }: ScreenProps) {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
 
   return (
-    <SafeAreaView
-      edges={tabBar ? ['top'] : ['top', 'bottom']}
-      style={{ flex: 1, backgroundColor: colors.bg }}
+    <View
+      style={{
+        flex: 1,
+        paddingTop: insets.top,
+        paddingBottom: tabBar ? 0 : insets.bottom,
+        backgroundColor: colors.bg,
+      }}
     >
       {header}
       <View style={{ flex: 1 }}>
@@ -38,6 +43,6 @@ export default function Screen({ children, header, tabBar = false, fab, bottomBa
       </View>
       {bottomBar}
       {tabBar ? <Footer /> : null}
-    </SafeAreaView>
+    </View>
   );
 }

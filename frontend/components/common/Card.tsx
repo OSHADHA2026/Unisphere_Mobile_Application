@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
+import { TouchableOpacity, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useTheme } from '@/context/ThemeContext';
 import { elevation, radius } from '@/constants/theme';
@@ -28,8 +28,8 @@ export default function Card({ children, onPress, padded = true, style }: CardPr
   if (!onPress) return <View style={[base, style]}>{children}</View>;
 
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [base, pressed && { opacity: 0.92 }, style]}>
+    <TouchableOpacity activeOpacity={0.9} onPress={onPress} style={[base, style]}>
       {children}
-    </Pressable>
+    </TouchableOpacity>
   );
 }

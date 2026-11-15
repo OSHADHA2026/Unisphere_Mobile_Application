@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { Alert, Image, Platform, Pressable, View } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { Alert, Platform, Pressable, View } from "react-native";
+import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { MapPin, X } from "lucide-react-native";
@@ -14,6 +15,7 @@ import SuccessModal from "@/components/feedback/SuccessModal";
 import { useTheme } from "@/context/ThemeContext";
 import DateField from "@/features/housing/components/DateField";
 import apiClient from "@/services/api";
+import { refreshList } from "@/lib/queryClient";
 
 const ROOM_TYPES = ["Single", "Shared", "Apartment"] as const;
 const AVAILABILITY = ["Available", "Not Available"] as const;
@@ -90,7 +92,7 @@ export default function CreateHousing() {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsMultipleSelection: true,
         allowsEditing: false,
-        quality: 0.7,
+        quality: 0.5,
         base64: true,
       });
 
@@ -183,6 +185,26 @@ export default function CreateHousing() {
     }));
   };
 
+  // Leaves the form exactly once, however it is triggered (timer, button, back).
+  const hasFinished = useRef(false);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function finishCreate() {
+    if (hasFinished.current) return;
+    hasFinished.current = true;
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    blurActiveElement();
+    setShowSuccessModal(false);
+    router.back();
+  }
+
+  useEffect(
+    () => () => {
+      if (closeTimer.current) clearTimeout(closeTimer.current);
+    },
+    [],
+  );
+
   const handlePublish = async () => {
     if (isPublishing) return;
 
@@ -254,12 +276,13 @@ export default function CreateHousing() {
             : "Listing posted successfully!"
         );
 
+        refreshList("housings");
         blurActiveElement();
         setShowSuccessModal(true);
 
-        setTimeout(() => {
-          router.back();
-        }, 1500);
+        // Close automatically after a moment (finishCreate ignores a second call,
+        // e.g. if the user taps "Done" first).
+        closeTimer.current = setTimeout(finishCreate, 1500);
       } else {
         Alert.alert("Error", data.message || "Something went wrong");
       }
@@ -301,11 +324,7 @@ export default function CreateHousing() {
     }
   };
 
-  const closeSuccessModal = () => {
-    blurActiveElement();
-    setShowSuccessModal(false);
-    router.back();
-  };
+  const closeSuccessModal = finishCreate;
 
   const sectionTitle = (title: string) => (
     <AppText variant="heading" style={{ marginTop: 8 }}>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Image, View, type ImageStyle, type StyleProp, type ViewStyle } from 'react-native';
+import { View, type StyleProp, type ViewStyle } from 'react-native';
+import { Image, type ImageContentFit } from 'expo-image';
 import { ImageOff } from 'lucide-react-native';
 import type { LucideIcon } from 'lucide-react-native';
 
@@ -8,7 +9,7 @@ import { useTheme } from '@/context/ThemeContext';
 type RemoteImageProps = {
   uri?: string | null;
   style?: StyleProp<ViewStyle>;
-  resizeMode?: ImageStyle['resizeMode'];
+  contentFit?: ImageContentFit;
   fallbackIcon?: LucideIcon;
 };
 
@@ -16,11 +17,15 @@ type RemoteImageProps = {
  * Image with a graceful fallback: when there is no URL, or the image fails
  * to load (offline, expired link...), a neutral placeholder is shown instead
  * of an empty gap.
+ *
+ * Uses expo-image, which decodes pictures at the size they are displayed
+ * (instead of full resolution) and caches them, keeping memory use low in
+ * long image lists.
  */
 export default function RemoteImage({
   uri,
   style,
-  resizeMode = 'cover',
+  contentFit = 'cover',
   fallbackIcon: FallbackIcon = ImageOff,
 }: RemoteImageProps) {
   const { colors } = useTheme();
@@ -38,9 +43,11 @@ export default function RemoteImage({
   return (
     <Image
       source={{ uri }}
-      resizeMode={resizeMode}
+      contentFit={contentFit}
+      cachePolicy="memory-disk"
+      recyclingKey={uri.length > 200 ? uri.slice(-64) : uri}
       onError={() => setFailedUri(uri)}
-      style={[{ backgroundColor: colors.bgInput }, style as StyleProp<ImageStyle>]}
+      style={[{ backgroundColor: colors.bgInput }, style as any]}
     />
   );
 }

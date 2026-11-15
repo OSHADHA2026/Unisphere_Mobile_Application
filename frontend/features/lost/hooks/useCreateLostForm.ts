@@ -100,7 +100,7 @@ export const useLostForm = ({ itemId }: UseLostFormParams = {}) => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      quality: 0.8,
+      quality: 0.6,
     });
 
     if (!result.canceled && result.assets.length > 0) {

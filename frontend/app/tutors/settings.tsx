@@ -11,6 +11,7 @@ import ScreenHeader from "@/components/common/ScreenHeader";
 import { layout } from "@/constants/theme";
 import { useTheme } from "@/context/ThemeContext";
 import apiClient from "@/services/api";
+import { refreshList } from "@/lib/queryClient";
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -25,7 +26,8 @@ export default function SettingsScreen() {
     try {
       await apiClient.patch(`/tutors/${id}/status`, { isOnline: false });
       Alert.alert("Success", "Status updated successfully.");
-      router.replace("/tutors");
+      refreshList("tutors");
+      router.dismissTo("/tutors");
     } catch (error: any) {
       console.log("Error Detail:", error.response?.data || error.message);
       Alert.alert("Error", "Failed to update status.");
@@ -47,7 +49,8 @@ export default function SettingsScreen() {
           try {
             await apiClient.delete(`/tutors/${id}`);
             Alert.alert("Deleted", "Your profile has been removed.");
-            router.replace("/tutors");
+            refreshList("tutors");
+      router.dismissTo("/tutors");
           } catch (error) {
             console.error("Delete Error:", error);
             Alert.alert("Error", "Failed to delete account.");

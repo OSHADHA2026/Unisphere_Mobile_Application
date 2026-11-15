@@ -4,6 +4,7 @@
  */
 export const queryKeys = {
   currentUser: ['currentUser'] as const,
+  event: (id: string) => ['event', id] as const,
   events: (type: 'all' | 'mine' | 'registrations' = 'all') => ['events', type] as const,
   housings: ['housings'] as const,
   marketplace: ['marketplace'] as const,

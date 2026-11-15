@@ -1,45 +1,57 @@
-import { useState, useEffect, useCallback } from 'react';
-import apiClient from '@/services/api';
+import { useState } from 'react';
 import { Alert } from 'react-native';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { getCachedListItem } from '@/lib/cache';
+import { queryKeys } from '@/lib/queryKeys';
+import { useUser } from '@/hooks/useUser';
+import apiClient from '@/services/api';
+
+/**
+ * Event detail. Opens instantly with the record the list already downloaded
+ * (when available) and refreshes it in the background.
+ */
 export const useEventDetail = (id: string | string[]) => {
-  const [event, setEvent] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [isRegistered, setIsRegistered] = useState(false);
+  const eventId = Array.isArray(id) ? id[0] : id;
+  const queryClient = useQueryClient();
+  const { userId } = useUser();
+
+  const [registeredLocally, setRegisteredLocally] = useState(false);
   const [registering, setRegistering] = useState(false);
 
-  const fetchDetail = useCallback(async () => {
-    if (!id) return;
-    try {
-      setLoading(true);
-      const [{ data: evRes }, { data: userRes }] = await Promise.all([
-        apiClient.get(`/events/${id}`),
-        apiClient.get('/users/me').catch(() => ({ data: { success: false } }))
-      ]);
+  const { data: event, isLoading, refetch } = useQuery({
+    queryKey: queryKeys.event(eventId),
+    enabled: !!eventId,
+    queryFn: async () => {
+      const { data } = await apiClient.get(`/events/${eventId}`);
+      return data.success ? data.event : null;
+    },
+    initialData: () => {
+      const match = (e: any) => e.id === eventId;
+      return (
+        getCachedListItem(queryClient, queryKeys.events('all'), match)?.raw ??
+        getCachedListItem(queryClient, queryKeys.events('registrations'), match)?.raw
+      );
+    },
+    // The list copy is shown immediately but treated as stale, so a fresh one is fetched.
+    initialDataUpdatedAt: 0,
+    staleTime: 30 * 1000,
+  });
 
-      if (evRes.success) {
-        setEvent(evRes.event);
-        if (userRes.success && (evRes.event.registrants || []).includes(userRes.user._id)) {
-          setIsRegistered(true);
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching event details:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
+  const isRegistered = registeredLocally || (!!userId && (event?.registrants || []).includes(userId));
 
   const register = async () => {
     try {
       setRegistering(true);
-      const res = await apiClient.post(`/events/${id}/register`);
+      const res = await apiClient.post(`/events/${eventId}/register`);
       if (res.data.success) {
-        setIsRegistered(true);
+        setRegisteredLocally(true);
+        queryClient.invalidateQueries({ queryKey: ['events'] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.event(eventId) });
         return true;
       }
     } catch (error: any) {
-      Alert.alert("Error", error.response?.data?.message || "Could not register for event");
+      Alert.alert('Error', error.response?.data?.message || 'Could not register for event');
       return false;
     } finally {
       setRegistering(false);
@@ -47,9 +59,12 @@ export const useEventDetail = (id: string | string[]) => {
     return false;
   };
 
-  useEffect(() => {
-    fetchDetail();
-  }, [fetchDetail]);
-
-  return { event, loading, isRegistered, registering, register, refreshDetail: fetchDetail };
+  return {
+    event: event ?? null,
+    loading: isLoading,
+    isRegistered,
+    registering,
+    register,
+    refreshDetail: refetch,
+  };
 };

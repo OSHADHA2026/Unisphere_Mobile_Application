@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, View } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 import { ChevronRight, type LucideIcon } from 'lucide-react-native';
 
 import { useTheme } from '@/context/ThemeContext';
@@ -22,18 +22,18 @@ export default function MenuRow({ icon: IconComponent, label, value, onPress, ri
   const tint = destructive ? colors.danger : colors.primary;
 
   return (
-    <Pressable
+    <TouchableOpacity
       accessibilityRole={onPress ? 'button' : undefined}
+      activeOpacity={onPress ? 0.7 : 1}
       onPress={onPress}
       disabled={!onPress}
-      style={({ pressed }) => ({
+      style={{
         flexDirection: 'row',
         alignItems: 'center',
         gap: 14,
         paddingHorizontal: 16,
         paddingVertical: 14,
-        backgroundColor: pressed ? colors.bgInput : 'transparent',
-      })}
+      }}
     >
       <View
         style={{
@@ -58,6 +58,6 @@ export default function MenuRow({ icon: IconComponent, label, value, onPress, ri
         ) : null}
       </View>
       {right ?? (onPress && !destructive ? <ChevronRight size={20} color={colors.textMuted} /> : null)}
-    </Pressable>
+    </TouchableOpacity>
   );
 }

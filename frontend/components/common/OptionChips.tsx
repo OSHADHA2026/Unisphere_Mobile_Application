@@ -37,7 +37,8 @@ export default function OptionChips<T extends string>({ label, options, value, o
               accessibilityState={{ selected: active }}
               onPress={() => onChange(option)}
               style={{
-                height: 40,
+                minHeight: 40,
+                paddingVertical: 8,
                 paddingHorizontal: 16,
                 borderRadius: 20,
                 borderWidth: 1,

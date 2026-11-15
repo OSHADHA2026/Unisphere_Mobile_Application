@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Pressable, View } from 'react-native';
+import { Modal, Pressable, TouchableOpacity, View } from 'react-native';
 import type { LucideIcon } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -49,28 +49,28 @@ export default function ActionSheet({ visible, onClose, title, actions }: Action
           ) : null}
 
           {actions.map((action) => (
-            <Pressable
+            <TouchableOpacity
               key={action.label}
+              activeOpacity={0.7}
               accessibilityRole="button"
               onPress={() => {
                 onClose();
                 action.onPress();
               }}
-              style={({ pressed }) => ({
+              style={{
                 flexDirection: 'row',
                 alignItems: 'center',
                 gap: 14,
                 paddingVertical: 14,
                 paddingHorizontal: 4,
                 borderRadius: 12,
-                backgroundColor: pressed ? colors.bgInput : 'transparent',
-              })}
+              }}
             >
               <action.icon size={20} color={action.destructive ? colors.danger : colors.primary} />
               <AppText variant="subheading" tone={action.destructive ? 'danger' : 'default'}>
                 {action.label}
               </AppText>
-            </Pressable>
+            </TouchableOpacity>
           ))}
         </Pressable>
       </Pressable>

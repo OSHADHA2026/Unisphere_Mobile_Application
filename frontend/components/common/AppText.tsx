@@ -52,5 +52,5 @@ export default function AppText({
     inverse: '#FFFFFF',
   }[tone];
 
-  return <Text {...rest} style={[variants[variant], { color }, center && { textAlign: 'center' }, style]} />;
+  return <Text maxFontSizeMultiplier={1.25} {...rest} style={[variants[variant], { color }, center && { textAlign: 'center' }, style]} />;
 }

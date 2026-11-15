@@ -8,6 +8,7 @@ import OptionChips from "@/components/common/OptionChips";
 import PhotoPicker from "@/components/common/PhotoPicker";
 import TextField from "@/components/common/TextField";
 import apiClient from "@/services/api";
+import { refreshList } from "@/lib/queryClient";
 
 const CONDITIONS = ["New", "Used", "Like New"] as const;
 
@@ -44,7 +45,7 @@ export default function CreateListingScreen() {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.8,
+      quality: 0.6,
     });
 
     if (!result.canceled) {
@@ -99,7 +100,8 @@ export default function CreateListingScreen() {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      router.replace("/marketplace");
+      refreshList("marketplace");
+      router.dismissTo("/marketplace");
     } catch (error: any) {
       const backendErrors = error.response?.data?.errors;
 

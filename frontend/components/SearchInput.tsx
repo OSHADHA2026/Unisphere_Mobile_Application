@@ -19,7 +19,7 @@ const SearchInput = ({ value, onChangeText, placeholder = 'Search...' }: SearchI
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        height: 48,
+        minHeight: 48,
         paddingHorizontal: 14,
         gap: 10,
         borderRadius: radius.md,
@@ -36,7 +36,7 @@ const SearchInput = ({ value, onChangeText, placeholder = 'Search...' }: SearchI
         placeholderTextColor={colors.textMuted}
         returnKeyType="search"
         autoCorrect={false}
-        style={{ flex: 1, height: 48, fontSize: 15, color: colors.text, outlineStyle: 'none' } as any}
+        style={{ flex: 1, minHeight: 48, fontSize: 15, color: colors.text, outlineStyle: 'none' } as any}
       />
       {value.length > 0 ? (
         <Pressable accessibilityLabel="Clear search" onPress={() => onChangeText('')} hitSlop={10}>

@@ -37,7 +37,7 @@ export default function Footer() {
         borderTopWidth: 1,
         borderTopColor: colors.navBorder,
         paddingBottom: insets.bottom,
-        height: layout.tabBarHeight + insets.bottom,
+        minHeight: layout.tabBarHeight + insets.bottom,
       }}
     >
       {TABS.map((tab) => {
@@ -50,7 +50,7 @@ export default function Footer() {
             accessibilityRole="tab"
             accessibilityLabel={tab.name}
             accessibilityState={{ selected: active }}
-            onPress={() => router.push(tab.path as any)}
+            onPress={() => router.navigate(tab.path as any)}
             style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 3 }}
           >
             <View

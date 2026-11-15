@@ -1,5 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import apiClient from "@/services/api";
+import { currentUserQueryOptions } from "@/hooks/useUser";
 import { queryKeys } from "@/lib/queryKeys";
 
 export interface Housing {
@@ -10,6 +11,8 @@ export interface Housing {
   roomType: string;
   images?: string[];
   isMine: boolean;
+  /** Full record from the API, used to open the detail page instantly. */
+  raw?: any;
 }
 
 const formatHousing = (h: any, currentUserId?: string): Housing => ({
@@ -20,16 +23,17 @@ const formatHousing = (h: any, currentUserId?: string): Housing => ({
   roomType: h.roomType,
   images: h.images || [],
   isMine: currentUserId ? h.postedBy === currentUserId : false,
+  raw: h,
 });
 
-const fetchHousings = async (): Promise<Housing[]> => {
-  const [userRes, housingsRes] = await Promise.all([
-    apiClient.get("/users/me").catch(() => ({ data: { user: null } })),
+const fetchHousings = async (queryClient: QueryClient): Promise<Housing[]> => {
+  // The signed-in user is cached, so this does not add a request every time.
+  const [user, housingsRes] = await Promise.all([
+    queryClient.fetchQuery(currentUserQueryOptions).catch(() => null),
     apiClient.get("/housing"),
   ]);
 
-  const currentUserId =
-    userRes.data.user?._id || userRes.data.user?.studentId;
+  const currentUserId = user?._id || user?.studentId;
 
   const fetchedHousings = housingsRes.data.data || [];
 
@@ -37,9 +41,10 @@ const fetchHousings = async (): Promise<Housing[]> => {
 };
 
 export const useHousing = () => {
+  const queryClient = useQueryClient();
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.housings,
-    queryFn: fetchHousings,
+    queryFn: () => fetchHousings(queryClient),
   });
 
   return {

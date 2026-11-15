@@ -8,15 +8,21 @@ import {
   markItemAsResolved,
 } from "../services/itemApi";
 import { queryKeys } from "@/lib/queryKeys";
+import { getCachedListItem } from "@/lib/cache";
 
 /* =========================
    🔹 QUERY: GET ONE ITEM
 ========================= */
 export const useLostItemDetailQuery = (itemId: string) => {
+  const queryClient = useQueryClient();
+
   return useQuery({
     queryKey: queryKeys.lostItem(itemId),
     queryFn: () => getLostItemById(itemId),
     enabled: !!itemId,
+    // Open instantly with the list's copy, then refresh in the background.
+    initialData: () => getCachedListItem(queryClient, queryKeys.lostItems, (i) => i.id === itemId),
+    initialDataUpdatedAt: 0,
   });
 };
 
@@ -57,12 +63,12 @@ export const useDeleteLostItemMutation = (navigation?: any) => {
   return useMutation({
     mutationFn: (itemId: string) => deleteLostItem(itemId),
 
-    onSuccess: (_, deletedItemId) => {
+    onSuccess: () => {
       // refresh list
       queryClient.invalidateQueries({ queryKey: queryKeys.lostItems });
 
-      // remove detail cache
-      queryClient.removeQueries({ queryKey: queryKeys.lostItem(deletedItemId) });
+      // The detail page is still on screen until navigation finishes, so its data
+      // is left in the cache (it expires on its own) to avoid a flash of an error.
 
       if (navigation) {
         navigation.goBack();

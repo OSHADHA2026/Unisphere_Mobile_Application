@@ -18,7 +18,12 @@ import Section from "@/components/common/Section";
 import { layout } from "@/constants/theme";
 import { useTheme } from "@/context/ThemeContext";
 import { useUser } from "@/hooks/useUser";
+import { useQueryClient } from "@tanstack/react-query";
+
+import { getCachedListItem } from "@/lib/cache";
+import { queryKeys } from "@/lib/queryKeys";
 import apiClient from "@/services/api";
+import { refreshList } from "@/lib/queryClient";
 
 interface HousingDetail {
   id: string;
@@ -41,6 +46,31 @@ interface HousingDetail {
   isMine: boolean;
 }
 
+const toHousingDetail = (h: any, fallbackId: string, userId?: string): HousingDetail => {
+  const postedBy = typeof h.postedBy === "object" ? h.postedBy?._id : h.postedBy;
+
+  return {
+    id: typeof h._id === "string" ? h._id : typeof h.id === "string" ? h.id : fallbackId,
+    title: h.title,
+    description: h.description,
+    address: h.address,
+    roomType: h.roomType,
+    rentPrice: h.rentPrice,
+    deposit: h.deposit,
+    availableFrom: h.availableFrom,
+    availabilityStatus: h.availabilityStatus,
+    furnished: h.furnished,
+    wifi: h.wifi,
+    parking: h.parking,
+    images: h.images || [],
+    contactName: h.contactName,
+    contactPhone: h.contactPhone,
+    contactEmail: h.contactEmail,
+    postedBy,
+    isMine: postedBy === userId,
+  };
+};
+
 export default function HousingDetail() {
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -49,8 +79,15 @@ export default function HousingDetail() {
   const { userId } = useUser();
   const { colors } = useTheme();
 
-  const [housing, setHousing] = useState<HousingDetail | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  // Open instantly with the listing the list already downloaded.
+  const [seed] = useState(() =>
+    getCachedListItem(queryClient, queryKeys.housings, (h) => h.id === housingId)?.raw,
+  );
+  const [housing, setHousing] = useState<HousingDetail | null>(
+    seed && housingId ? toHousingDetail(seed, housingId, userId) : null,
+  );
+  const [loading, setLoading] = useState(!seed);
   const [hasFetched, setHasFetched] = useState(false);
   const [notFound, setNotFound] = useState(false);
 
@@ -59,42 +96,14 @@ export default function HousingDetail() {
 
     (async () => {
       try {
-        setLoading(true);
+        if (!seed) setLoading(true);
         setNotFound(false);
         setHasFetched(false);
 
         const { data } = await apiClient.get(`/housing/${housingId}`);
 
         if (data.success && data.data) {
-          const h = data.data;
-          const postedBy =
-            typeof h.postedBy === "object" ? h.postedBy?._id : h.postedBy;
-
-          setHousing({
-            id:
-              typeof h._id === "string"
-                ? h._id
-                : typeof h.id === "string"
-                ? h.id
-                : housingId,
-            title: h.title,
-            description: h.description,
-            address: h.address,
-            roomType: h.roomType,
-            rentPrice: h.rentPrice,
-            deposit: h.deposit,
-            availableFrom: h.availableFrom,
-            availabilityStatus: h.availabilityStatus,
-            furnished: h.furnished,
-            wifi: h.wifi,
-            parking: h.parking,
-            images: h.images || [],
-            contactName: h.contactName,
-            contactPhone: h.contactPhone,
-            contactEmail: h.contactEmail,
-            postedBy,
-            isMine: postedBy === userId,
-          });
+          setHousing(toHousingDetail(data.data, housingId, userId));
 
           setNotFound(false);
         } else {
@@ -110,6 +119,7 @@ export default function HousingDetail() {
         setHasFetched(true);
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [housingId, userId]);
 
   const header = <ScreenHeader title="Housing details" />;
@@ -157,7 +167,8 @@ export default function HousingDetail() {
         onPress: async () => {
           try {
             await apiClient.delete(`/housing/${housing.id}`);
-            router.replace("/housing");
+            refreshList("housings");
+            router.dismissTo("/housing");
           } catch {
             Alert.alert("Error", "Failed to delete housing listing.");
           }

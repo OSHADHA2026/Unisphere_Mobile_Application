@@ -11,6 +11,7 @@ import Screen from "@/components/common/Screen";
 import ScreenHeader from "@/components/common/ScreenHeader";
 import TextField from "@/components/common/TextField";
 import apiClient from "@/services/api";
+import { refreshList } from "@/lib/queryClient";
 
 const TAGS = ["GENERAL", "MATHEMATICS", "COMPUTER SCIENCE"] as const;
 
@@ -112,7 +113,7 @@ export default function CreateStudyGroup() {
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.8,
+      quality: 0.6,
     });
 
     if (!result.canceled) {
@@ -193,7 +194,8 @@ export default function CreateStudyGroup() {
         Alert.alert("Success", "Study group created successfully.");
       }
 
-      router.replace("/studyGroup");
+      refreshList("studyGroups");
+      router.dismissTo("/studyGroup");
     } catch (error: any) {
       const backendErrors = error.response?.data?.errors;
 
