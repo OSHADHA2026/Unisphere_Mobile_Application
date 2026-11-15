@@ -4,11 +4,7 @@
  */
 const apiUrl = process.env.EXPO_PUBLIC_API_URL;
 
-if (!apiUrl) {
-  throw new Error('EXPO_PUBLIC_API_URL is not set');
-}
-
-export const API_URL: string = apiUrl;
+export const API_URL: string = apiUrl?.trim() ?? '';
 export const API_TIMEOUT_MS = 10_000;
 
 export const STORAGE_KEYS = {

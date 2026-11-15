@@ -10,6 +10,8 @@ cp .env.example .env        # set EXPO_PUBLIC_API_URL to your backend
 npx expo start
 ```
 
+For EAS builds, set `EXPO_PUBLIC_API_URL` in the EAS environment used by the build profile (for example, `preview` for preview builds). The local `.env` file is gitignored and is not included in cloud builds.
+
 | Script              | Purpose                    |
 | ------------------- | -------------------------- |
 | `npm start`         | Start the Expo dev server  |

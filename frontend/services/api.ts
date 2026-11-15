@@ -10,6 +10,10 @@ const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use(async (config) => {
+  if (!API_URL) {
+    throw new Error('EXPO_PUBLIC_API_URL is not configured for this build.');
+  }
+
   const token = await AppStorage.getItem(STORAGE_KEYS.userToken);
 
   if (token) {
