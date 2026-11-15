@@ -1,10 +1,41 @@
 import { useState } from 'react';
+import { isAxiosError } from 'axios';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import apiClient from '@/services/api';
 import { AppStorage } from '@/services/storage';
 import { STORAGE_KEYS } from '@/constants/config';
 import { queryKeys } from '@/lib/queryKeys';
+
+const getRequestErrorMessage = (error: unknown, fallback: string) => {
+  if (isAxiosError(error)) {
+    const responseMessage = error.response?.data?.message;
+    if (typeof responseMessage === 'string' && responseMessage.trim()) {
+      return responseMessage;
+    }
+
+    if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
+      return 'The server took too long to respond. Please try again.';
+    }
+
+    if (error.code === 'ERR_NETWORK') {
+      return 'This APK could not reach the API. Check its EAS Preview API URL and HTTPS connection.';
+    }
+  }
+
+  if (
+    error instanceof Error &&
+    error.message === 'EXPO_PUBLIC_API_URL is not configured for this build.'
+  ) {
+    return 'This APK was built without EXPO_PUBLIC_API_URL. Set it in the EAS Preview environment and rebuild.';
+  }
+
+  if (error instanceof Error && /secure.?store/i.test(error.message)) {
+    return 'The app could not access secure storage before contacting the API.';
+  }
+
+  return fallback;
+};
 
 export const useAuth = () => {
   const router = useRouter();
@@ -34,8 +65,8 @@ export const useAuth = () => {
         router.replace('/');
         return true;
       }
-    } catch (error: any) {
-      setErrorMessage(error.response?.data?.message || "Server unreachable. Check your connection.");
+    } catch (error: unknown) {
+      setErrorMessage(getRequestErrorMessage(error, 'Sign-in failed. Please try again.'));
     } finally {
       setIsLoading(false);
     }
@@ -57,8 +88,8 @@ export const useAuth = () => {
         router.replace('/login');
         return true;
       }
-    } catch (error: any) {
-      setErrorMessage(error.response?.data?.message || "Registration failed. Check your network.");
+    } catch (error: unknown) {
+      setErrorMessage(getRequestErrorMessage(error, 'Registration failed. Please try again.'));
     } finally {
       setIsLoading(false);
     }
